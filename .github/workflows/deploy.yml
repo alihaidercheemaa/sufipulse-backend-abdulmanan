@@ -36,7 +36,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{ secrets.APP_DIR }}
-            docker compose pull
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/sufipulsebackend:latest
             docker compose down backend
             docker compose up -d backend
             docker image prune -f
