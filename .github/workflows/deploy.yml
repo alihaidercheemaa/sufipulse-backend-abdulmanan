@@ -40,6 +40,6 @@ jobs:
           script: |
             cd ${{ secrets.APP_DIR }}
             docker compose pull
-            docker compose down
-            docker compose up -d
+            docker compose down backend
+            docker compose up -d backend
             docker image prune -f
