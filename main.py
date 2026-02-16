@@ -4,7 +4,7 @@ from api import auth_router,user_router,admin_router,vocalist_router,kalam_route
 app = FastAPI(title="My App")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","https://sufipulse.com", "http://127.0.0.1", "http://localhost:8000", "http://127.0.0.1:8000"],  # Restrict to localhost only
+    allow_origins=["http://localhost:3000","https://sufipulse.com", "http://127.0.0.1", "http://localhost:8000", "http://127.0.0.1:8000","https://sufipulse.com","https://api.sufipulse.com","https://www.sufipulse.com"],  # Restrict to localhost only
     allow_credentials=True,
     allow_methods=["*"],            # Allow all methods (GET, POST, OPTIONS, etc.)
     allow_headers=["*"],            # Allow all headers
