@@ -1,0 +1,100 @@
+# Dependencies
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Local configuration files
+.env.local
+.env.dev
+.env.test
+.env.production
+.env.backup
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/_build/
+
+# Distribution / packaging
+.pybuild/
+_build/
+dist/
+build/
+*.egg
+*.egg-info/
+*.dist-info/
+
+# Sensitive files
+*.key
+*.pem
+*.crt
+*.cert
+
+# SQLite databases
+*.sqlite
+*.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+*.gcov
+*.lcov
+*.profraw
+
+# FastAPI/Swagger
+/swagger/
+/redoc/
+/statics/
+
+# Backup files
+*~
+*.bak
+*.backup
