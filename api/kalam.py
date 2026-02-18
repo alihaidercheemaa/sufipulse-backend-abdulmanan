@@ -218,22 +218,12 @@ def get_kalam_submission(id: int, sub_id: int, user_id: int = Depends(get_curren
     return submission
 
 @router.post("/{id}/submissions/{sub_id}/update-status")
-def update_submission_status(id: int, sub_id: int, data: UpdateSubmissionStatus,
+def update_submission_status(id: int, sub_id: int, data: UpdateSubmissionStatus, 
                             user_id: int = Depends(get_current_user)):
     conn = DBConnection.get_connection()
     db = Queries(conn)
-    
-    # Map frontend statuses to backend statuses if needed
-    status_mapping = {
-        "pending": "pending",
-        "under_review": "under_review",
-        "approved": "approved",
-        "needs_revision": "needs_revision",
-        "rejected": "rejected"
-    }
-    
-    if data.new_status in status_mapping:
-        data.new_status = status_mapping[data.new_status]
+    if data.new_status == "admin_approved" : 
+        data.new_status = "final_approved"
 
     user = db.get_user_by_id(user_id)
     if not user or user["role"] not in ["admin", "sub-admin"]:
@@ -247,13 +237,8 @@ def update_submission_status(id: int, sub_id: int, data: UpdateSubmissionStatus,
     if not submission or submission["kalam_id"] != int(id):
         raise HTTPException(status_code=404, detail="Submission not found")
 
-    # Allow all status values
-    valid_statuses = ["pending", "under_review", "approved", "needs_revision", "rejected", 
-                      "admin_approved", "admin_rejected", "changes_requested", 
-                      "final_approved", "complete_approved", "posted"]
-    
-    if data.new_status not in valid_statuses:
-        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    if data.new_status not in ["admin_approved", "admin_rejected", "changes_requested","final_approved","complete_approved"]:
+        raise HTTPException(status_code=400, detail="Invalid status")
 
     updated_submission = db.update_submission_status(sub_id, data.new_status, data.comments)
     if not updated_submission:

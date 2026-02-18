@@ -7,56 +7,60 @@ from datetime import date
 class StudioQueries:
     def __init__(self, conn):
         self.conn = conn
-        self.cursor_factory = RealDictCursor
 
     def check_studio_visit_conflict(self, vocalist_id: int, kalam_id: int, preferred_date: date, preferred_time: str) -> bool:
         query = """
             SELECT EXISTS (
-                SELECT 1 FROM studio_visit_requests
-                WHERE vocalist_id = %s AND kalam_id = %s
+                SELECT 1 FROM studio_visit_requests 
+                WHERE vocalist_id = %s AND kalam_id = %s 
                 AND preferred_date = %s AND preferred_time = %s
             ) as conflict;
         """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (vocalist_id, kalam_id, preferred_date, preferred_time))
             result = cur.fetchone()
+            printr(result)
             return result['conflict']
 
     def check_remote_recording_conflict(self, vocalist_id: int, kalam_id: int, preferred_date: date, preferred_time: str) -> bool:
         query = """
             SELECT EXISTS (
-                SELECT 1 FROM remote_recording_requests
-                WHERE vocalist_id = %s AND kalam_id = %s
+                SELECT 1 FROM remote_recording_requests 
+                WHERE vocalist_id = %s AND kalam_id = %s 
                 AND preferred_date = %s AND preferred_time = %s
             ) as conflict;
         """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (vocalist_id, kalam_id, preferred_date, preferred_time))
+            
             result = cur.fetchone()
+            print(result)
             return result['conflict']
-
+        
     def check_studio_visit_conflict_datetime(self, preferred_date: date, preferred_time: str) -> bool:
         query = """
             SELECT EXISTS (
-                SELECT 1 FROM studio_visit_requests
+                SELECT 1 FROM studio_visit_requests 
                 WHERE preferred_date = %s AND preferred_time = %s
             ) as conflict;
         """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (preferred_date, preferred_time))
             result = cur.fetchone()
+            print(result)
             return result['conflict']
 
     def check_remote_recording_conflict_datetime(self, preferred_date: date, preferred_time: str) -> bool:
         query = """
             SELECT EXISTS (
-                SELECT 1 FROM remote_recording_requests
+                SELECT 1 FROM remote_recording_requests 
                 WHERE preferred_date = %s AND preferred_time = %s
             ) as conflict;
         """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, (preferred_date, preferred_time))
             result = cur.fetchone()
+            print(result)
             return result['conflict']
 
 
@@ -73,11 +77,11 @@ class StudioQueries:
         # Check for scheduling conflict
         if data.get('preferred_date') and data.get('preferred_time'):
             if self.check_studio_visit_conflict_datetime(
-                data['preferred_date'],
+                data['preferred_date'], 
                 data['preferred_time']
             ):
                 raise HTTPException(
-                    status_code=400,
+                    status_code=400, 
                     detail="The selected time slot is already taken. Please choose another time."
                 )
 
@@ -130,12 +134,12 @@ class StudioQueries:
                 )
         if data.get('preferred_date') and data.get('preferred_time'):
             if self.check_remote_recording_conflict_datetime(
-
-                data['preferred_date'],
+                
+                data['preferred_date'], 
                 data['preferred_time']
             ):
                 raise HTTPException(
-                    status_code=400,
+                    status_code=400, 
                     detail="The selected time slot is already taken. Please choose another time."
                 )
 

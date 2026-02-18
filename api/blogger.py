@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from psycopg2.extras import RealDictCursor
@@ -186,19 +186,8 @@ def update_blog_post(
 
     # Check if user is the owner of the blog
     blog = db.get_blog_submission_by_id(blog_id)
-    if not blog:
-        raise HTTPException(status_code=404, detail="Blog post not found")
-    
-    # Convert both to int for comparison (in case one is string from JWT)
-    blog_user_id = blog.get("user_id")
-    current_uid = int(current_user_id) if current_user_id else None
-    
-    # Handle None or mismatched types
-    if blog_user_id is None:
-        raise HTTPException(status_code=500, detail="Blog has no user_id. Database integrity issue.")
-    
-    if int(blog_user_id) != current_uid:
-        raise HTTPException(status_code=403, detail="Not authorized to update this blog post.")
+    if not blog or blog["user_id"] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this blog post")
 
     # Update the blog submission with new fields
     result = db.update_blog_submission(
@@ -281,54 +270,3 @@ def approve_or_reject_blog(
         print(f"Failed to create notification: {str(e)}")
 
     return {"message": f"Blog submission status updated to {data.status} successfully", "blog_submission": result}
-
-
-@router.post("/upload-image")
-async def upload_blog_image(
-    file: UploadFile = File(...),
-    user_id: int = Depends(get_current_user)
-):
-    """Upload blog featured image and return URL"""
-    try:
-        # Validate file type
-        allowed_types = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
-        if file.content_type not in allowed_types:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Invalid file type. Allowed types: {', '.join(allowed_types)}"
-            )
-        
-        # Validate file size (max 5MB)
-        file_size = 0
-        content = await file.read()
-        file_size = len(content)
-        if file_size > 5 * 1024 * 1024:  # 5MB
-            raise HTTPException(status_code=400, detail="File size must be less than 5MB")
-        
-        # Create upload directory if it doesn't exist
-        upload_dir = "uploads/blog-images"
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        # Generate unique filename
-        file_extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-        unique_filename = f"{uuid.uuid4()}.{file_extension}"
-        file_path = os.path.join(upload_dir, unique_filename)
-        
-        # Save file
-        with open(file_path, "wb") as f:
-            f.write(content)
-        
-        # Return the full URL with backend address
-        # This will be http://localhost:8000/uploads/blog-images/{filename}
-        image_url = f"http://localhost:8000/uploads/blog-images/{unique_filename}"
-        
-        return {
-            "message": "Image uploaded successfully",
-            "url": image_url,
-            "filename": unique_filename
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Error uploading image: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error uploading image: {str(e)}")

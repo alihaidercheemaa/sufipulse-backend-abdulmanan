@@ -28,16 +28,7 @@ class NotificationQueries:
         if not user or user["role"] == "admin":
             return []
 
-        user_role = user["role"]
-        # Handle role to target_type mapping
-        if user_role == "blogger":
-            target_role = "bloggers"
-        elif user_role == "writer":
-            target_role = "writers"
-        elif user_role == "vocalist":
-            target_role = "vocalists"
-        else:
-            target_role = user_role + "s"  # Fallback for other roles
+        user_role = user["role"]+'s'  # Convert 'writer' to 'writers', 'vocalist' to 'vocalists'
 
         query = """
         SELECT n.id, n.title, n.message, n.target_type, n.target_user_ids, n.created_at,
@@ -51,7 +42,7 @@ class NotificationQueries:
         ORDER BY n.created_at DESC;
         """
         with self.conn.cursor() as cur:
-            cur.execute(query, (user_id, target_role, user_id))
+            cur.execute(query, (user_id, user_role, user_id))
             notifications = cur.fetchall()
         return notifications
 

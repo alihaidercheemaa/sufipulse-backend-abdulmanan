@@ -89,7 +89,7 @@ def admin_update_vocalist_status(
 ):
     conn = DBConnection.get_connection()
     db = Queries(conn)
-
+   
     # Fetch full user info
     user = db.get_user_by_id(current_user_id)  # must return dict with 'id' and 'role'
     if not user:
@@ -98,72 +98,15 @@ def admin_update_vocalist_status(
     if user["role"] != "admin" and user["role"] != "sub-admin":
         raise HTTPException(status_code=403, detail="Only admins can update vocalist status")
 
-    # Allow all status values
-    valid_statuses = ["pending", "under_review", "approved", "needs_revision", "rejected"]
-    if data.status not in valid_statuses:
-        raise HTTPException(status_code=400, detail=f"Status must be one of: {valid_statuses}")
+    if data.status not in ["approved", "rejected"]:
+        raise HTTPException(status_code=400, detail="Status must be 'approved' or 'rejected'")
 
     profile = db.get_vocalist_by_user_id(vocalist_id)
     if not profile:
         raise HTTPException(status_code=404, detail="Vocalist profile not found")
 
-    # Update vocalist status
-    try:
-        db.update_vocalist_status(vocalist_id, data.status)
-        return {"message": f"Vocalist profile {data.status} successfully", "status": data.status}
-    except Exception as e:
-        # Fallback to direct update if method doesn't exist
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE vocalists SET status = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s RETURNING *",
-                (data.status, vocalist_id)
-            )
-            conn.commit()
-            return {"message": f"Vocalist profile {data.status} successfully", "status": data.status}
-
-
-class BloggerStatusUpdate(BaseModel):
-    status: str  # must be "approved" or "rejected"
-
-@router.patch("/{blogger_id}/status")
-def admin_update_blogger_status(
-    blogger_id: int,
-    data: BloggerStatusUpdate,
-    current_user_id: int = Depends(get_current_user)  # Only ID
-):
-    conn = DBConnection.get_connection()
-    db = Queries(conn)
-
-    # Fetch full user info
-    user = db.get_user_by_id(current_user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if user["role"] != "admin" and user["role"] != "sub-admin":
-        raise HTTPException(status_code=403, detail="Only admins can update blogger status")
-
-    # Allow all status values
-    valid_statuses = ["pending", "under_review", "approved", "needs_revision", "rejected"]
-    if data.status not in valid_statuses:
-        raise HTTPException(status_code=400, detail=f"Status must be one of: {valid_statuses}")
-
-    profile = db.get_blogger_by_user_id(blogger_id)
-    if not profile:
-        raise HTTPException(status_code=404, detail="Blogger profile not found")
-
-    # Update blogger status
-    try:
-        db.update_blogger_status(blogger_id, data.status)
-        return {"message": f"Blogger profile {data.status} successfully", "status": data.status}
-    except Exception as e:
-        # If the method doesn't exist, we'll create a simple update
-        with conn.cursor() as cur:
-            cur.execute(
-                "UPDATE bloggers SET status = %s, updated_at = CURRENT_TIMESTAMP WHERE user_id = %s RETURNING *",
-                (data.status, blogger_id)
-            )
-            conn.commit()
-            return {"message": f"Blogger profile {data.status} successfully", "status": data.status}
+    db.update_vocalist_profile(vocalist_id, data.status)
+    return {"message": f"Vocalist profile {data.status} successfully"}
 
 
 @router.post("/register")

@@ -76,19 +76,6 @@ class VocalistQueries:
             cur.execute(query, values)
             self.conn.commit()
             return cur.fetchone()
-
-    def update_vocalist_status(self, user_id: int, status: str):
-        """Update vocalist status (pending/under_review/approved/needs_revision/rejected)"""
-        query = """
-        UPDATE vocalists
-        SET status = %s, updated_at = CURRENT_TIMESTAMP
-        WHERE user_id = %s
-        RETURNING *;
-        """
-        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(query, (status, user_id))
-            self.conn.commit()
-            return cur.fetchone()
         
         
     

@@ -4,7 +4,6 @@ from typing import List, Optional
 from db.connection import DBConnection
 from datetime import datetime
 from sql.combinedQueries import Queries
-from utils.otp import send_template_email
 
 router = APIRouter(prefix="/public", tags=["Public"])
 
@@ -180,87 +179,10 @@ def get_approved_blogs(
 ):
     conn = DBConnection.get_connection()
     db = Queries(conn)
-
+    
     try:
         # Fetch only approved and posted blogs
         blogs = db.fetch_approved_blogs(skip, limit, category, search)
         return blogs
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/blogs/{blog_id}")
-def get_blog_by_id(blog_id: int):
-    conn = DBConnection.get_connection()
-    db = Queries(conn)
-
-    try:
-        blog = db.fetch_blog_by_id(blog_id)
-        if not blog:
-            raise HTTPException(status_code=404, detail="Blog post not found")
-        return blog
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-class ContactFormSubmit(BaseModel):
-    name: str
-    email: str
-    subject: str
-    message: str
-
-
-@router.post("/contact")
-def submit_contact_form(data: ContactFormSubmit):
-    """
-    Submit contact form and send confirmation email using Resend template
-    """
-    try:
-        # Validate input
-        if not data.name or not data.email or not data.subject or not data.message:
-            raise HTTPException(status_code=400, detail="All fields are required")
-        
-        # Send confirmation email to user using template
-        try:
-            send_template_email(
-                to_email=data.email,
-                template_id="contact-form-notification",
-                subject="Thank You for Contacting SufiPulse",
-                variables={
-                    "name": data.name,
-                    "email": data.email,
-                    "subject": data.subject,
-                    "message": data.message
-                }
-            )
-        except Exception as email_error:
-            print(f"Failed to send confirmation email: {email_error}")
-            # Don't fail the request if email fails, just log the error
-        
-        # Send notification email to admin
-        try:
-            send_template_email(
-                to_email="contact@sufipulse.com",
-                template_id="contact-form-notification",
-                subject=f"New Contact Form: {data.subject}",
-                variables={
-                    "name": data.name,
-                    "email": data.email,
-                    "subject": data.subject,
-                    "message": data.message
-                }
-            )
-        except Exception as admin_email_error:
-            print(f"Failed to send admin notification: {admin_email_error}")
-        
-        return {
-            "message": "Message sent successfully! We will get back to you soon.",
-            "status": "success"
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Error in contact form: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

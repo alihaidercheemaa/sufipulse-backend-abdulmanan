@@ -14,7 +14,7 @@ router = APIRouter(
 class NotificationCreate(BaseModel):
     title: str
     message: str
-    target_type: str  # all, writers, vocalists, bloggers, specific
+    target_type: str  # all, writers, vocalists, specific
     target_user_ids: Optional[List[int]] = None
 
 @router.post("/")
@@ -30,9 +30,9 @@ def create_notification(
         raise HTTPException(status_code=403, detail="Only admins can create notifications")
 
 
-    if data.target_type not in ("all", "writers", "vocalists", "bloggers", "specific"):
+    if data.target_type not in ("all", "writers", "vocalists", "specific"):
         raise HTTPException(status_code=400, detail="Invalid target_type")
-
+    
     if data.target_type == "specific" and not data.target_user_ids:
         raise HTTPException(status_code=400, detail="target_user_ids required for specific notifications")
 
